@@ -6,6 +6,7 @@ const parkingRoutes = require('./routes/parkingRoute');
 const authRoutes = require('./routes/authRoute');
 const carRoutes = require('./routes/carRoute');
 const reservationRoutes = require('./routes/reservationRoute');
+const dashboardRoutes = require('./routes/dashboardRoute'); // Assurez-vous que le chemin est correct
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -27,6 +28,7 @@ app.use('/api/parking', parkingRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/car', carRoutes);
 app.use('/api/reservation', reservationRoutes);
+app.use('/api/dashboard', dashboardRoutes); // Utilisez la route du tableau de bord
 
 // Démarrer le serveur
 app.listen(PORT, () => {
