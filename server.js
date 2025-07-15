@@ -23,6 +23,8 @@ mongoose.connect('mongodb://localhost:27017/parkingDB', {
 .then(() => console.log('Connected to MongoDB'))
 .catch(err => console.error('Could not connect to MongoDB', err));
 
+app.use('/uploads', express.static('uploads'));
+
 // Routes
 app.use('/api/parking', parkingRoutes);
 app.use('/api/auth', authRoutes);
