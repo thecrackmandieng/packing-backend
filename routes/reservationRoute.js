@@ -3,22 +3,20 @@ const router = express.Router();
 const Reservation = require('../models/Reservation');
 const Parking = require('../models/Parking');
 
-// Créer une réservation
+// ✅ Créer une réservation
 router.post('/', async (req, res) => {
   try {
     const { user, parkingId, car, startTime, endTime } = req.body;
 
-    // Vérifier si le parking existe et a de la capacité
     const parking = await Parking.findById(parkingId).populate('cars');
     if (!parking) {
-      return res.status(404).send({ error: 'Parking not found' });
+      return res.status(404).json({ error: 'Parking not found' });
     }
 
     if (parking.cars.length >= parking.capacity) {
-      return res.status(400).send({ error: 'Parking is full' });
+      return res.status(400).json({ error: 'Parking is full' });
     }
 
-    // Créer une nouvelle réservation
     const reservation = new Reservation({
       user,
       parking: parkingId,
@@ -28,26 +26,28 @@ router.post('/', async (req, res) => {
     });
 
     await reservation.save();
-    res.status(201).send(reservation);
+    res.status(201).json(reservation);
   } catch (error) {
-    res.status(400).send(error);
+    console.error('Erreur lors de la création de réservation:', error);
+    res.status(400).json({ error: 'Erreur lors de la création de réservation' });
   }
 });
 
-// Obtenir toutes les réservations
+// ✅ Obtenir toutes les réservations avec détails complets
 router.get('/', async (req, res) => {
   try {
     const reservations = await Reservation.find()
-      .populate('user', 'username')
+      .populate('user', 'nom prenom email telephone')
       .populate('parking', 'name')
       .populate('car', 'licensePlate');
-    res.send(reservations);
+    res.json(reservations);
   } catch (error) {
-    res.status(500).send(error);
+    console.error('Erreur lors de la récupération des réservations:', error);
+    res.status(500).json({ error: 'Erreur lors de la récupération' });
   }
 });
 
-// Annuler une réservation
+// ✅ Annuler une réservation
 router.patch('/:id/cancel', async (req, res) => {
   try {
     const reservation = await Reservation.findByIdAndUpdate(
@@ -57,12 +57,27 @@ router.patch('/:id/cancel', async (req, res) => {
     );
 
     if (!reservation) {
-      return res.status(404).send({ error: 'Reservation not found' });
+      return res.status(404).json({ error: 'Réservation non trouvée' });
     }
 
-    res.send(reservation);
+    res.json(reservation);
   } catch (error) {
-    res.status(400).send(error);
+    console.error('Erreur lors de l’annulation de la réservation:', error);
+    res.status(400).json({ error: 'Erreur lors de l’annulation' });
+  }
+});
+
+// ✅ Supprimer une réservation
+router.delete('/:id', async (req, res) => {
+  try {
+    const deleted = await Reservation.findByIdAndDelete(req.params.id);
+    if (!deleted) {
+      return res.status(404).json({ error: 'Réservation non trouvée' });
+    }
+    res.json({ message: 'Réservation supprimée avec succès', reservation: deleted });
+  } catch (error) {
+    console.error('Erreur lors de la suppression de la réservation:', error);
+    res.status(400).json({ error: 'Erreur lors de la suppression' });
   }
 });
 

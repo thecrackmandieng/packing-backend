@@ -70,7 +70,7 @@ io.on('connection', (socket) => {
 // ─────────────────────────────────────────────
 // 7. Communication avec Arduino via port série
 // ─────────────────────────────────────────────
-const port = new SerialPort({ path: '/dev/ttyUSB0', baudRate: 9600 });
+/* const port = new SerialPort({ path: '/dev/ttyUSB0', baudRate: 9600 });
 const parser = port.pipe(new ReadlineParser({ delimiter: '\r\n' }));
 
 parser.on('data', async (line) => {
@@ -107,7 +107,7 @@ parser.on('data', async (line) => {
     console.error('❌ Erreur traitement ligne série:', err);
   }
 });
-
+ */
 // ─────────────────────────────────────────────
 // 8. Lancement du serveur
 // ─────────────────────────────────────────────
