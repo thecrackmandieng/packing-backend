@@ -1,18 +1,24 @@
 const express = require('express');
 const router = express.Router();
 const Parking = require('../models/Parking');
+const upload = require('../upload'); // <-- importe multer
 
-// Créer un parking
-router.post('/', async (req, res) => {
+
+// Créer un parking avec image
+router.post('/', upload.single('image'), async (req, res) => {
   try {
-    const parking = new Parking(req.body);
+    const parkingData = {
+      ...req.body,
+      image: req.file ? req.file.filename : null
+    };
+
+    const parking = new Parking(parkingData);
     await parking.save();
     res.status(201).send(parking);
   } catch (error) {
     res.status(400).send(error);
   }
 });
-
 // Obtenir tous les parkings
 router.get('/', async (req, res) => {
   try {
