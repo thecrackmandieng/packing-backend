@@ -57,7 +57,7 @@ router.patch('/:id/cancel', async (req, res) => {
     );
 
     if (!reservation) {
-      return res.status(404).json({ error: 'Réservation non trouvée' });
+      return res.status(404).json({ error: 'Réservation non trouvées' });
     }
 
     res.json(reservation);
