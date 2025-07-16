@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Place = require('../models/Place'); // Assurez-vous que le modèle Place est importé
+const Place = require('../models/Place'); 
 
 // Obtenir toutes les places
 router.get('/', async (req, res) => {

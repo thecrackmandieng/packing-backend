@@ -16,7 +16,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // Connexion à MongoDB
-mongoose.connect('mongodb://localhost:27017/parkingDB', {
+mongoose.connect('mongodb://127.0.0.1:27017/parkingDB', {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
