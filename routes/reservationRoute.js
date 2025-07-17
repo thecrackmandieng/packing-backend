@@ -8,28 +8,34 @@ router.post('/', async (req, res) => {
   try {
     const { user, parkingId, car, startTime, endTime } = req.body;
 
-    const parking = await Parking.findById(parkingId).populate('cars');
+    const parking = await Parking.findById(parkingId);
     if (!parking) {
       return res.status(404).json({ error: 'Parking not found' });
     }
 
-    if (parking.cars.length >= parking.capacity) {
+    if (parking.availableSpots <= 0) {
       return res.status(400).json({ error: 'Parking is full' });
     }
 
-    const reservation = new Reservation({
+    const reservationData = {
       user,
       parking: parkingId,
-      car,
       startTime,
       endTime
-    });
+    };
+    if (car) reservationData.car = car;
 
+    const reservation = new Reservation(reservationData);
     await reservation.save();
+
+    // Décrémente le nombre de places disponibles
+    parking.availableSpots -= 1;
+    await parking.save();
+
     res.status(201).json(reservation);
   } catch (error) {
     console.error('Erreur lors de la création de réservation:', error);
-    res.status(400).json({ error: 'Erreur lors de la création de réservation' });
+    res.status(400).json({ error: 'Erreur lors de la création de réservation', details: error.message });
   }
 });
 
@@ -48,6 +54,7 @@ router.get('/', async (req, res) => {
 });
 
 // ✅ Annuler une réservation
+// PATCH : Annuler une réservation
 router.patch('/:id/cancel', async (req, res) => {
   try {
     const reservation = await Reservation.findByIdAndUpdate(
@@ -57,8 +64,11 @@ router.patch('/:id/cancel', async (req, res) => {
     );
 
     if (!reservation) {
-      return res.status(404).json({ error: 'Réservation non trouvées' });
+      return res.status(404).json({ error: 'Réservation non trouvée' });
     }
+
+    // Incrémente le nombre de places disponibles
+    await Parking.findByIdAndUpdate(reservation.parking, { $inc: { availableSpots: 1 } });
 
     res.json(reservation);
   } catch (error) {
@@ -67,13 +77,17 @@ router.patch('/:id/cancel', async (req, res) => {
   }
 });
 
-// ✅ Supprimer une réservation
+// DELETE : Supprimer une réservation
 router.delete('/:id', async (req, res) => {
   try {
     const deleted = await Reservation.findByIdAndDelete(req.params.id);
     if (!deleted) {
       return res.status(404).json({ error: 'Réservation non trouvée' });
     }
+
+    // Incrémente le nombre de places disponibles
+    await Parking.findByIdAndUpdate(deleted.parking, { $inc: { availableSpots: 1 } });
+
     res.json({ message: 'Réservation supprimée avec succès', reservation: deleted });
   } catch (error) {
     console.error('Erreur lors de la suppression de la réservation:', error);

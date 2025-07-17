@@ -11,11 +11,7 @@ const reservationSchema = new mongoose.Schema({
     ref: 'Parking',
     required: true
   },
-  car: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Car',
-    required: true
-  },
+car: { type: mongoose.Schema.Types.ObjectId, ref: 'Car', required: false },
   startTime: {
     type: Date,
     required: true
