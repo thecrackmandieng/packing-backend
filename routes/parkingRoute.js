@@ -1,8 +1,13 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const Parking = require('../models/Parking');
-const upload = require('../upload'); // <-- importe multer
+const upload = require('../upload'); // multer pour gestion image
 
+// Helper : vérifier validité ObjectId
+function isValidObjectId(id) {
+  return mongoose.Types.ObjectId.isValid(id);
+}
 
 // Créer un parking avec image
 router.post('/', upload.single('image'), async (req, res) => {
@@ -14,77 +19,91 @@ router.post('/', upload.single('image'), async (req, res) => {
 
     const parking = new Parking(parkingData);
     await parking.save();
-    res.status(201).send(parking);
+    res.status(201).json(parking);
   } catch (error) {
-    res.status(400).send(error);
+    res.status(400).json({ error: 'Erreur lors de la création du parking', details: error.message });
   }
 });
+
 // Obtenir tous les parkings
 router.get('/', async (req, res) => {
   try {
     const parkings = await Parking.find();
-    res.send(parkings);
+    res.json(parkings);
   } catch (error) {
-    res.status(500).send(error);
+    res.status(500).json({ error: 'Erreur lors de la récupération des parkings' });
   }
 });
 
 // Obtenir un parking par ID
 router.get('/:id', async (req, res) => {
+  const id = req.params.id;
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({ error: 'ID de parking invalide' });
+  }
   try {
-    const parking = await Parking.findById(req.params.id);
+    const parking = await Parking.findById(id);
     if (!parking) {
-      return res.status(404).send();
+      return res.status(404).json({ error: 'Parking non trouvé' });
     }
-    res.send(parking);
+    res.json(parking);
   } catch (error) {
-    res.status(500).send(error);
+    res.status(500).json({ error: 'Erreur lors de la récupération du parking' });
   }
 });
 
 // Obtenir les espaces occupés et restants d'un parking
 router.get('/:id/space', async (req, res) => {
+  const id = req.params.id;
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({ error: 'ID de parking invalide' });
+  }
   try {
-    const parking = await Parking.findById(req.params.id).populate('cars');
+    const parking = await Parking.findById(id).populate('cars');
     if (!parking) {
-      return res.status(404).send({ error: 'Parking not found' });
+      return res.status(404).json({ error: 'Parking non trouvé' });
     }
 
     const occupiedSpaces = parking.cars.length;
     const remainingSpaces = parking.capacity - occupiedSpaces;
 
-    res.send({
-      occupiedSpaces,
-      remainingSpaces
-    });
+    res.json({ occupiedSpaces, remainingSpaces });
   } catch (error) {
-    res.status(500).send(error);
+    res.status(500).json({ error: 'Erreur lors du calcul des espaces' });
   }
 });
 
 // Mettre à jour un parking
 router.patch('/:id', async (req, res) => {
+  const id = req.params.id;
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({ error: 'ID de parking invalide' });
+  }
   try {
-    const parking = await Parking.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const parking = await Parking.findByIdAndUpdate(id, req.body, { new: true });
     if (!parking) {
-      return res.status(404).send();
+      return res.status(404).json({ error: 'Parking non trouvé' });
     }
-    res.send(parking);
+    res.json(parking);
   } catch (error) {
-    res.status(400).send(error);
+    res.status(400).json({ error: 'Erreur lors de la mise à jour', details: error.message });
   }
 });
 
 // Supprimer un parking
 router.delete('/:id', async (req, res) => {
+  const id = req.params.id;
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({ error: 'ID de parking invalide' });
+  }
   try {
-    const parking = await Parking.findByIdAndDelete(req.params.id);
+    const parking = await Parking.findByIdAndDelete(id);
     if (!parking) {
-      return res.status(404).send();
+      return res.status(404).json({ error: 'Parking non trouvé' });
     }
-    res.send(parking);
+    res.json({ message: 'Parking supprimé avec succès', parking });
   } catch (error) {
-    res.status(500).send(error);
+    res.status(500).json({ error: 'Erreur lors de la suppression du parking' });
   }
 });
 
