@@ -68,6 +68,48 @@ io.on('connection', (socket) => {
 });
 
 // ─────────────────────────────────────────────
+// 7. Communication avec Arduino via port série
+// ─────────────────────────────────────────────
+/* const port = new SerialPort({ path: '/dev/ttyUSB0', baudRate: 9600 });
+const parser = port.pipe(new ReadlineParser({ delimiter: '\r\n' }));
+
+parser.on('data', async (line) => {
+  const [event, id] = line.trim().split(',');
+  const parkingId = Number(id);
+
+  if (!parkingId || (event !== 'ENTRY' && event !== 'EXIT')) return;
+
+  try {
+    const place = await Place.findOne({ parkingId });
+    if (!place) return;
+
+    if (event === 'ENTRY') {
+      place.isOccupied = true;
+      place.licensePlate = 'UNKNOWN';
+      await place.save();
+      io.emit('carEntry', {
+        placeId: place._id,
+        parkingId: place.parkingId,
+        licensePlate: place.licensePlate
+      });
+    }
+
+    if (event === 'EXIT') {
+      place.isOccupied = false;
+      place.licensePlate = '';
+      await place.save();
+      io.emit('carExit', {
+        placeId: place._id,
+        parkingId: place.parkingId
+      });
+    }
+  } catch (err) {
+    console.error('❌ Erreur traitement ligne série:', err);
+  }
+});
+ */
+// ─────────────────────────────────────────────
+// 8. Lancement du serveur
 // ─────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
