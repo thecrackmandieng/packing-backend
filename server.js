@@ -68,7 +68,6 @@ io.on('connection', (socket) => {
 });
 
 // ─────────────────────────────────────────────
-// 7. Lancement du serveur
 // ─────────────────────────────────────────────
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
